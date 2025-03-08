@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,10 +29,12 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.jeffdavidgordon.hdhrlib.model.Channel
-import io.github.jeffdavidgordon.hdhrlib.model.Device
+import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.jeffdavidgordon.hdhrapp.model.TunerData
+import io.github.jeffdavidgordon.hdhrapp.model.TunerDataViewModel
+import io.github.jeffdavidgordon.hdhrapp.model.TunerDataViewModelFactory
+import io.github.jeffdavidgordon.hdhrlib.model.DeviceMap
 import io.github.jeffdavidgordon.hdhrlib.service.DiscoverService
-import io.github.jeffdavidgordon.hdhrlib.service.TunerService
 import java.net.InetAddress
 import java.net.UnknownHostException
 import kotlin.experimental.inv
@@ -47,7 +51,7 @@ class MainActivity : ComponentActivity() {
         deviceMap.addDevice(InetAddress.getByName("192.168.1.86"))
         println(deviceMap)
         setContent {
-            AppContent(deviceMap.values.iterator().next())
+            AppContent(deviceMap)
         }
     }
 
@@ -92,34 +96,23 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppContent(device: Device) {
+fun AppContent(deviceMap: DeviceMap) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        device.tuners.map { tuner ->
-            val channels = TunerService.getStreamInfo(tuner)?.channels?.values
 
-            var channelInfo: Channel? = null
-            if (!channels?.isEmpty()!!) {
-                channelInfo = channels.iterator().next()
-            }
+        val tunerDataViewModel: TunerDataViewModel = viewModel(factory = TunerDataViewModelFactory(deviceMap))
+        val data by tunerDataViewModel.data.collectAsState()
 
-            val channel = TunerService.getChannel(tuner)?.channel
-            val status = TunerService.getStatus(tuner)
 
-            if (channel == null) {
-                NoDataRow(tuner.id)
-            } else {
+        deviceMap.forEach { (deviceId, device) ->
+            device.tuners.map { tuner ->
+                val tunerData: TunerData? = data?.get(deviceId)?.tuners?.get(tuner.id)
                 DataRow(
-                    tunerNumber = tuner.id,
-                    channel = channel,
-                    description = channelInfo?.let { "${it.identifier} ${it.callsign}" } ?: "No Signal",
-                    progress1 = (status.ss).toFloat(),
-                    progress2 = (status.snq).toFloat(),
-                    progress3 = (status.seq).toFloat()
+                    tunerData = tunerData,
                 )
             }
         }
@@ -128,39 +121,38 @@ fun AppContent(device: Device) {
 
 @Composable
 fun DataRow(
-    tunerNumber: Int,
-    channel: Int?,
-    description: String,
-    progress1: Float,
-    progress2: Float,
-    progress3: Float
+    tunerData: TunerData?,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "$tunerNumber",
-            modifier = Modifier.weight(1f),
-            textAlign = TextAlign.Center,
-            fontSize = 16.sp
-        )
-        Text(
-            text = "Ch. $channel\n$description",
-            modifier = Modifier.weight(2f),
-            textAlign = TextAlign.Center,
-            fontSize = 14.sp
-        )
-        CircularProgressBar(progress = progress1, modifier = Modifier.weight(1f))
-        CircularProgressBar(progress = progress2, modifier = Modifier.weight(1f))
-        CircularProgressBar(progress = progress3, modifier = Modifier.weight(1f))
+    if (tunerData?.channelNumber == null) {
+        NoDataRow(tunerData?.id)
+    } else {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = tunerData.id.toString(),
+                modifier = Modifier.weight(1f),
+                textAlign = TextAlign.Center,
+                fontSize = 16.sp
+            )
+            Text(
+                text = "Ch. " + tunerData.channelNumber + "\n" + (tunerData.channelInfo?.let { "${it.identifier} ${it.callsign}" } ?: "No Signal"),
+                modifier = Modifier.weight(2f),
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp
+            )
+            CircularProgressBar(progress = (tunerData.status.ss)?.toFloat(), modifier = Modifier.weight(1f))
+            CircularProgressBar(progress = (tunerData.status.snq)?.toFloat(), modifier = Modifier.weight(1f))
+            CircularProgressBar(progress = (tunerData.status.seq)?.toFloat(), modifier = Modifier.weight(1f))
+        }
     }
 }
 
 @Composable
 fun NoDataRow(
-    tunerNumber: Int,
+    tunerNumber: Int?,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -187,30 +179,24 @@ fun NoDataRow(
 
 
 @Composable
-fun CircularProgressBar(progress: Float, modifier: Modifier = Modifier) {
+fun CircularProgressBar(progress: Float?, modifier: Modifier = Modifier) {
     val red = Color.Red
     val green = Color.Green
-    val fraction = progress.coerceIn(0F, 100F) / 100F
     Box(
         modifier = modifier.size(50.dp),
         contentAlignment = Alignment.Center
     ) {
+        val fraction = (progress?.coerceIn(0F, 100F) ?: 0F) / 100F
         CircularProgressIndicator(
-            progress = { progress / 100 },
+            progress = { progress?.div(100) ?: 0F },
             modifier = Modifier.fillMaxSize(),
             color = lerp(red, green, fraction),
             strokeWidth = 6.dp,
         )
         Text(
-            text = "${progress.toInt()}%",
+            text = "${progress?.toInt()}%",
             fontSize = 12.sp,
             textAlign = TextAlign.Center
         )
     }
 }
-/*
-@Preview(showBackground = true)
-@Composable
-fun PreviewAppContent() {
-    AppContent()
-}*/
