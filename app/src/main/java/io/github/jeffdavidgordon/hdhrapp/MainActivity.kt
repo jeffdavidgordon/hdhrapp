@@ -9,6 +9,7 @@ import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,13 +27,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.github.jeffdavidgordon.hdhrapp.model.DeviceData
 import io.github.jeffdavidgordon.hdhrapp.model.TunerData
 import io.github.jeffdavidgordon.hdhrapp.model.TunerDataViewModel
 import io.github.jeffdavidgordon.hdhrapp.model.TunerDataViewModelFactory
+import io.github.jeffdavidgordon.hdhrlib.model.Device
 import io.github.jeffdavidgordon.hdhrlib.model.DeviceMap
 import io.github.jeffdavidgordon.hdhrlib.service.DiscoverService
 import java.net.InetAddress
@@ -107,8 +111,10 @@ fun AppContent(deviceMap: DeviceMap) {
         val tunerDataViewModel: TunerDataViewModel = viewModel(factory = TunerDataViewModelFactory(deviceMap))
         val data by tunerDataViewModel.data.collectAsState()
 
-
         deviceMap.forEach { (deviceId, device) ->
+            val deviceData: DeviceData? = data?.get(deviceId)
+            DeviceRow(deviceData)
+            HeaderRow()
             device.tuners.map { tuner ->
                 val tunerData: TunerData? = data?.get(deviceId)?.tuners?.get(tuner.id)
                 DataRow(
@@ -116,6 +122,37 @@ fun AppContent(deviceMap: DeviceMap) {
                 )
             }
         }
+    }
+}
+
+@Composable
+fun DeviceRow(deviceData: DeviceData?) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.Black)
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text("Device: " + deviceData?.id, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), color = Color.White)
+    }
+}
+
+
+@Composable
+fun HeaderRow() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.Gray)
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text("Tuner", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+        Text("Channel", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+        Text("Strength", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+        Text("Quality", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+        Text("Errors", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
     }
 }
 

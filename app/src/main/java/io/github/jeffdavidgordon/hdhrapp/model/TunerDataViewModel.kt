@@ -41,7 +41,7 @@ class TunerDataViewModel(deviceMap: DeviceMap) : ViewModel() {
 
                         tuners.add(TunerData(tuner.id, channelInfo, channelNumber, status))
                     }
-                    newDeviceMapData[deviceId] = DeviceData(tuners)
+                    newDeviceMapData[deviceId] = DeviceData(deviceId, tuners)
                 }
                 _data.value = newDeviceMapData
                 delay(1000) // Ping every second
@@ -63,6 +63,7 @@ class TunerDataViewModelFactory(private val deviceMap: DeviceMap) : ViewModelPro
 class DeviceMapData : HashMap<String, DeviceData>()
 
 data class DeviceData(
+    val id: String,
     val tuners: List<TunerData>
 )
 
