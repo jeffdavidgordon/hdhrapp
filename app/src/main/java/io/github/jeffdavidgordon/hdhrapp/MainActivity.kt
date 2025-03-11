@@ -10,6 +10,7 @@ import android.os.StrictMode.ThreadPolicy
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,10 +20,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,9 +42,10 @@ import io.github.jeffdavidgordon.hdhrapp.model.DeviceData
 import io.github.jeffdavidgordon.hdhrapp.model.TunerData
 import io.github.jeffdavidgordon.hdhrapp.model.TunerDataViewModel
 import io.github.jeffdavidgordon.hdhrapp.model.TunerDataViewModelFactory
-import io.github.jeffdavidgordon.hdhrlib.model.Device
 import io.github.jeffdavidgordon.hdhrlib.model.DeviceMap
+import io.github.jeffdavidgordon.hdhrlib.model.Tuner
 import io.github.jeffdavidgordon.hdhrlib.service.DiscoverService
+import io.github.jeffdavidgordon.hdhrlib.service.TunerService
 import java.net.InetAddress
 import java.net.UnknownHostException
 import kotlin.experimental.inv
@@ -60,7 +67,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun getBroadcastAddress(context: Context): InetAddress? {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = connectivityManager.activeNetwork ?: return null
         val linkProperties: LinkProperties = connectivityManager.getLinkProperties(network) ?: return null
 
@@ -82,7 +89,7 @@ class MainActivity : ComponentActivity() {
 
         return try {
             InetAddress.getByAddress(broadcastBytes)
-        } catch (e: UnknownHostException) {
+        } catch (_: UnknownHostException) {
             null
         }
     }
@@ -118,6 +125,7 @@ fun AppContent(deviceMap: DeviceMap) {
             device.tuners.map { tuner ->
                 val tunerData: TunerData? = data?.get(deviceId)?.tuners?.get(tuner.id)
                 DataRow(
+                    tuner = tuner,
                     tunerData = tunerData,
                 )
             }
@@ -138,7 +146,6 @@ fun DeviceRow(deviceData: DeviceData?) {
     }
 }
 
-
 @Composable
 fun HeaderRow() {
     Row(
@@ -158,62 +165,65 @@ fun HeaderRow() {
 
 @Composable
 fun DataRow(
+    tuner: Tuner,
     tunerData: TunerData?,
 ) {
-    if (tunerData?.channelNumber == null) {
-        NoDataRow(tunerData?.id)
-    } else {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = tunerData.id.toString(),
-                modifier = Modifier.weight(1f),
-                textAlign = TextAlign.Center,
-                fontSize = 16.sp
-            )
-            Text(
-                text = "Ch. " + tunerData.channelNumber + "\n" + (tunerData.channelInfo?.let { "${it.identifier} ${it.callsign}" } ?: "No Signal"),
-                modifier = Modifier.weight(2f),
-                textAlign = TextAlign.Center,
-                fontSize = 14.sp
-            )
-            CircularProgressBar(progress = (tunerData.status.ss)?.toFloat(), modifier = Modifier.weight(1f))
-            CircularProgressBar(progress = (tunerData.status.snq)?.toFloat(), modifier = Modifier.weight(1f))
-            CircularProgressBar(progress = (tunerData.status.seq)?.toFloat(), modifier = Modifier.weight(1f))
-        }
-    }
-}
+    var expanded by remember { mutableStateOf(false) }
 
-@Composable
-fun NoDataRow(
-    tunerNumber: Int?,
-) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "$tunerNumber",
+            text = tunerData?.id.toString(),
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center,
             fontSize = 16.sp
         )
-        Text(
-            text = "No Channel",
-            modifier = Modifier.weight(2f),
-            textAlign = TextAlign.Center,
-            fontSize = 14.sp
-        )
-        CircularProgressBar(progress = 0.0F, modifier = Modifier.weight(1f))
-        CircularProgressBar(progress = 0.0F, modifier = Modifier.weight(1f))
-        CircularProgressBar(progress = 0.0F, modifier = Modifier.weight(1f))
-    }
-}
 
+        if (tunerData?.channelNumber != null) {
+            Text(
+                text = "Ch. " + tunerData.channelNumber + "\n" + (tunerData.channelInfo?.let { "${it.identifier} ${it.callsign}" }
+                    ?: "No Signal"),
+                modifier = Modifier.weight(2f)
+                    .clickable { expanded = true }
+                    .padding(16.dp),
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp
+            )
+        } else {
+            Text(
+                text = "No Channel",
+                modifier = Modifier.weight(2f)
+                    .clickable { expanded = true }
+                    .padding(16.dp),
+                textAlign = TextAlign.Center,
+                fontSize = 14.sp
+            )
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            tunerData?.lineup?.forEach { (channel, deviceChannel) ->
+                if (deviceChannel?.deviceFrequency != null) {
+                    DropdownMenuItem(
+                        text = { Text(text = "$channel - ${deviceChannel.deviceFrequency.guideNumber} ${deviceChannel.deviceFrequency.guideName}") },
+                        onClick = {
+                            expanded = false
+                            TunerService.setChannel(tuner, channel.toLong())
+                        }
+                    )
+                }
+            }
+        }
+        CircularProgressBar(progress = (tunerData?.status?.ss)?.toFloat(), modifier = Modifier.weight(1f))
+        CircularProgressBar(progress = (tunerData?.status?.snq)?.toFloat(), modifier = Modifier.weight(1f))
+        CircularProgressBar(progress = (tunerData?.status?.seq)?.toFloat(), modifier = Modifier.weight(1f))
+    }
+
+}
 
 @Composable
 fun CircularProgressBar(progress: Float?, modifier: Modifier = Modifier) {

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import io.github.jeffdavidgordon.hdhrlib.model.Channel
+import io.github.jeffdavidgordon.hdhrlib.model.DeviceChannel
 import io.github.jeffdavidgordon.hdhrlib.model.DeviceMap
 import io.github.jeffdavidgordon.hdhrlib.model.TunerStatus
 import io.github.jeffdavidgordon.hdhrlib.service.TunerService
@@ -38,8 +39,9 @@ class TunerDataViewModel(deviceMap: DeviceMap) : ViewModel() {
 
                         val channelNumber = TunerService.getChannel(tuner)?.channel
                         val status = TunerService.getStatus(tuner)
+                        val lineup = TunerService.getLineup(tuner)
 
-                        tuners.add(TunerData(tuner.id, channelInfo, channelNumber, status))
+                        tuners.add(TunerData(tuner.id, channelInfo, channelNumber, status, lineup))
                     }
                     newDeviceMapData[deviceId] = DeviceData(deviceId, tuners)
                 }
@@ -71,5 +73,6 @@ data class TunerData(
     var id: Int,
     var channelInfo: Channel?,
     val channelNumber: Int?,
-    val status: TunerStatus
+    val status: TunerStatus,
+    val lineup: MutableMap<Int, DeviceChannel>
 )
