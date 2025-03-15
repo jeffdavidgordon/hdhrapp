@@ -15,16 +15,23 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -109,6 +116,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppContent(deviceMap: DeviceMap) {
     MaterialTheme(
@@ -117,31 +125,39 @@ fun AppContent(deviceMap: DeviceMap) {
             onBackground = Color.White
         )
     ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("HDHomeRun Signal Statistics") }
+                )
+            }
+        ) { innerPadding ->
+            Surface(
+                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                color = MaterialTheme.colorScheme.background
             ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
 
-                val tunerDataViewModel: TunerDataViewModel =
-                    viewModel(factory = TunerDataViewModelFactory(deviceMap))
-                val data by tunerDataViewModel.data.collectAsState()
+                    val tunerDataViewModel: TunerDataViewModel =
+                        viewModel(factory = TunerDataViewModelFactory(deviceMap))
+                    val data by tunerDataViewModel.data.collectAsState()
 
-                deviceMap.forEach { (deviceId, device) ->
-                    val deviceData: DeviceData? = data?.get(deviceId)
-                    DeviceRow(deviceData)
-                    HeaderRow()
-                    device.tuners.map { tuner ->
-                        val tunerData: TunerData? = data?.get(deviceId)?.tuners?.get(tuner.id)
-                        DataRow(
-                            tuner = tuner,
-                            tunerData = tunerData,
-                        )
+                    deviceMap.forEach { (deviceId, device) ->
+                        val deviceData: DeviceData? = data?.get(deviceId)
+                        DeviceRow(deviceData)
+                        HeaderRow()
+                        device.tuners.map { tuner ->
+                            val tunerData: TunerData? = data?.get(deviceId)?.tuners?.get(tuner.id)
+                            DataRow(
+                                tuner = tuner,
+                                tunerData = tunerData,
+                            )
+                        }
                     }
                 }
             }
@@ -167,15 +183,43 @@ fun HeaderRow() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.Gray)
+            .background(Color.DarkGray)
             .padding(8.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text("Tuner", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-        Text("Channel", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-        Text("Strength", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-        Text("Quality", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-        Text("Errors", fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+        Text(
+            "Tuner",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.2f)
+        )
+        Text(
+            "Channel",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.2f)
+        )
+        Text(
+            "Strength",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.16f)
+        )
+        Text(
+            "Quality",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.15f)
+        )
+        Text(
+            "Errors",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.14f)
+        )
+        Spacer(
+            modifier = Modifier.weight(0.1f)
+        )
     }
 }
 
@@ -193,7 +237,8 @@ fun DataRow(
     ) {
         Text(
             text = tunerData?.id.toString(),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
+                .clickable { expanded = true },
             textAlign = TextAlign.Center,
             fontSize = 16.sp
         )
@@ -234,11 +279,18 @@ fun DataRow(
                 }
             }
         }
-        CircularProgressBar(progress = (tunerData?.status?.ss)?.toFloat(), modifier = Modifier.weight(1f))
-        CircularProgressBar(progress = (tunerData?.status?.snq)?.toFloat(), modifier = Modifier.weight(1f))
-        CircularProgressBar(progress = (tunerData?.status?.seq)?.toFloat(), modifier = Modifier.weight(1f))
+        CircularProgressBar(progress = (tunerData?.status?.ss)?.toFloat(), modifier = Modifier.weight(1f).clickable { expanded = true })
+        CircularProgressBar(progress = (tunerData?.status?.snq)?.toFloat(), modifier = Modifier.weight(1f).clickable { expanded = true })
+        CircularProgressBar(progress = (tunerData?.status?.seq)?.toFloat(), modifier = Modifier.weight(1f).clickable { expanded = true })
+        Column(
+            modifier = Modifier.padding(16.dp).clickable { expanded = true }
+        ) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = "Change channel..."
+            )
+        }
     }
-
 }
 
 @Composable
