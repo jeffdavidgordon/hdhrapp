@@ -22,7 +22,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -108,26 +111,39 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppContent(deviceMap: DeviceMap) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+    MaterialTheme(
+        colorScheme = darkColorScheme(
+            background = Color.Black,
+            onBackground = Color.White
+        )
     ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
 
-        val tunerDataViewModel: TunerDataViewModel = viewModel(factory = TunerDataViewModelFactory(deviceMap))
-        val data by tunerDataViewModel.data.collectAsState()
+                val tunerDataViewModel: TunerDataViewModel =
+                    viewModel(factory = TunerDataViewModelFactory(deviceMap))
+                val data by tunerDataViewModel.data.collectAsState()
 
-        deviceMap.forEach { (deviceId, device) ->
-            val deviceData: DeviceData? = data?.get(deviceId)
-            DeviceRow(deviceData)
-            HeaderRow()
-            device.tuners.map { tuner ->
-                val tunerData: TunerData? = data?.get(deviceId)?.tuners?.get(tuner.id)
-                DataRow(
-                    tuner = tuner,
-                    tunerData = tunerData,
-                )
+                deviceMap.forEach { (deviceId, device) ->
+                    val deviceData: DeviceData? = data?.get(deviceId)
+                    DeviceRow(deviceData)
+                    HeaderRow()
+                    device.tuners.map { tuner ->
+                        val tunerData: TunerData? = data?.get(deviceId)?.tuners?.get(tuner.id)
+                        DataRow(
+                            tuner = tuner,
+                            tunerData = tunerData,
+                        )
+                    }
+                }
             }
         }
     }

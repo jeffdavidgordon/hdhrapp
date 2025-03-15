@@ -74,5 +74,5 @@ data class TunerData(
     var channelInfo: Channel?,
     val channelNumber: Int?,
     val status: TunerStatus,
-    val lineup: MutableMap<Int, DeviceChannel>
+    val lineup: MutableMap<Int, DeviceChannel?>
 )
