@@ -68,9 +68,7 @@ class MainActivity : ComponentActivity() {
         StrictMode.setThreadPolicy(gfgPolicy)
 
         val deviceMap = DiscoverService.getDeviceMap(getBroadcastAddress(this))
-        println(InetAddress.getByName("192.168.1.86").hostAddress)
         deviceMap.addDevice(InetAddress.getByName("192.168.1.86"))
-        println(deviceMap)
         setContent {
             AppContent(deviceMap)
         }
@@ -147,16 +145,21 @@ fun AppContent(deviceMap: DeviceMap) {
                         viewModel(factory = TunerDataViewModelFactory(deviceMap))
                     val data by tunerDataViewModel.data.collectAsState()
 
-                    deviceMap.forEach { (deviceId, device) ->
-                        val deviceData: DeviceData? = data?.get(deviceId)
-                        DeviceRow(deviceData)
-                        HeaderRow()
-                        device.tuners.map { tuner ->
-                            val tunerData: TunerData? = data?.get(deviceId)?.tuners?.get(tuner.id)
-                            DataRow(
-                                tuner = tuner,
-                                tunerData = tunerData,
-                            )
+                    if (deviceMap.isEmpty()) {
+                        Text("No HDHomeRun devices found.")
+                    } else {
+                        deviceMap.forEach { (deviceId, device) ->
+                            val deviceData: DeviceData? = data?.get(deviceId)
+                            DeviceRow(deviceData)
+                            HeaderRow()
+                            device.tuners.map { tuner ->
+                                val tunerData: TunerData? =
+                                    data?.get(deviceId)?.tuners?.get(tuner.id)
+                                DataRow(
+                                    tuner = tuner,
+                                    tunerData = tunerData,
+                                )
+                            }
                         }
                     }
                 }
@@ -242,7 +245,6 @@ fun DataRow(
             textAlign = TextAlign.Center,
             fontSize = 16.sp
         )
-
         if (tunerData?.channelNumber != null) {
             Text(
                 text = "Ch. " + tunerData.channelNumber + "\n" + (tunerData.channelInfo?.let { "${it.identifier} ${it.callsign}" }
@@ -263,22 +265,6 @@ fun DataRow(
                 fontSize = 14.sp
             )
         }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            tunerData?.lineup?.forEach { (channel, deviceChannel) ->
-                if (deviceChannel?.deviceFrequency != null) {
-                    DropdownMenuItem(
-                        text = { Text(text = "$channel - ${deviceChannel.deviceFrequency.guideNumber} ${deviceChannel.deviceFrequency.guideName}") },
-                        onClick = {
-                            expanded = false
-                            TunerService.setChannel(tuner, channel.toLong())
-                        }
-                    )
-                }
-            }
-        }
         CircularProgressBar(progress = (tunerData?.status?.ss)?.toFloat(), modifier = Modifier.weight(1f).clickable { expanded = true })
         CircularProgressBar(progress = (tunerData?.status?.snq)?.toFloat(), modifier = Modifier.weight(1f).clickable { expanded = true })
         CircularProgressBar(progress = (tunerData?.status?.seq)?.toFloat(), modifier = Modifier.weight(1f).clickable { expanded = true })
@@ -289,6 +275,31 @@ fun DataRow(
                 imageVector = Icons.Default.MoreVert,
                 contentDescription = "Change channel..."
             )
+        }
+    }
+    DropdownMenu(
+        modifier = Modifier.padding(bottom = 30.dp),
+        expanded = expanded,
+        onDismissRequest = { expanded = false },
+    ) {
+        tunerData?.lineup?.forEach { (channel, deviceChannel) ->
+            if (deviceChannel?.deviceFrequency != null) {
+                DropdownMenuItem(
+                    text = { Text(text = "$channel - ${deviceChannel.deviceFrequency.guideNumber} ${deviceChannel.deviceFrequency.guideName}") },
+                    onClick = {
+                        expanded = false
+                        TunerService.setChannel(tuner, channel.toLong())
+                    }
+                )
+            } else {
+                DropdownMenuItem(
+                    text = { Text(text = "$channel - (no signal)", color = Color.Red) },
+                    onClick = {
+                        expanded = false
+                        TunerService.setChannel(tuner, channel.toLong())
+                    }
+                )
+            }
         }
     }
 }
