@@ -18,10 +18,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -47,6 +50,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.jeffdavidgordon.hdhrapp.model.DeviceData
 import io.github.jeffdavidgordon.hdhrapp.model.TunerData
@@ -170,6 +174,7 @@ fun AppContent(deviceMap: DeviceMap) {
 
 @Composable
 fun DeviceRow(deviceData: DeviceData?) {
+    var showDialog by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -178,6 +183,16 @@ fun DeviceRow(deviceData: DeviceData?) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text("Device: " + deviceData?.id, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), color = Color.White)
+        if (deviceData != null) {
+            Box(
+                modifier = Modifier.clickable { showDialog = true }
+            ) {
+                Icon(imageVector = Icons.Outlined.Info, contentDescription = "Device Info")
+            }
+            if (showDialog) {
+                DeviceDialog(onDismiss = { showDialog = false }, deviceData)
+            }
+        }
     }
 }
 
@@ -324,5 +339,69 @@ fun CircularProgressBar(progress: Float?, modifier: Modifier = Modifier) {
             fontSize = 12.sp,
             textAlign = TextAlign.Center
         )
+    }
+}
+
+@Composable
+fun DeviceDialog(onDismiss: () -> Unit, deviceData: DeviceData) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            tonalElevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+            ) {
+                Text(
+                    text = "Device Inforamtion",
+                    style = MaterialTheme.typography.headlineSmall, // Headline style
+                    modifier = Modifier.padding(bottom = 8.dp) // Space below heading
+                )
+                Row(modifier = Modifier.padding(bottom = 8.dp)) {
+                    Text(text = "ID: ", fontWeight = FontWeight.Bold)
+                    Text(text = deviceData.id)
+                }
+                Row(modifier = Modifier.padding(bottom = 8.dp)) {
+                    Text(text = "IP: ", fontWeight = FontWeight.Bold)
+                    Text(text = deviceData.ip.hostAddress ?: "(ip not available)")
+                }
+                Row(modifier = Modifier.padding(bottom = 8.dp)) {
+                    Text(text = "Model: ", fontWeight = FontWeight.Bold)
+                    Text(text = deviceData.model)
+                }
+                Row(modifier = Modifier.padding(bottom = 8.dp)) {
+                    Text(text = "Channel Maps: ", fontWeight = FontWeight.Bold)
+                }
+                Row(modifier = Modifier.padding(bottom = 8.dp)) {
+                    Text(text = deviceData.features.channelMap.toString())
+                }
+                Row {
+                    Text(text = "Modulation: ", fontWeight = FontWeight.Bold)
+                }
+                Row(modifier = Modifier.padding(bottom = 8.dp)) {
+                    Text(text = deviceData.features.modulation.toString())
+                }
+                Row {
+                    Text(text = "Auto Modulation: ", fontWeight = FontWeight.Bold)
+                }
+                Row(modifier = Modifier.padding(bottom = 8.dp)) {
+                    Text(text = deviceData.features.autoModulation.toString())
+                }
+                Row(modifier = Modifier.padding(bottom = 8.dp)) {
+                    Text(text = "Version: ", fontWeight = FontWeight.Bold)
+                    Text(deviceData.version)
+                }
+                Row {
+                    Text(text = "Copyright: ", fontWeight = FontWeight.Bold)
+                }
+                Row(modifier = Modifier.padding(bottom = 8.dp)) {
+                    Text(deviceData.copyright)
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth(1f)) {
+                    Text("OK")
+                }
+            }
+        }
     }
 }

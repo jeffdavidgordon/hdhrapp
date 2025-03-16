@@ -7,13 +7,16 @@ import androidx.lifecycle.viewModelScope
 import io.github.jeffdavidgordon.hdhrlib.model.Channel
 import io.github.jeffdavidgordon.hdhrlib.model.DeviceChannel
 import io.github.jeffdavidgordon.hdhrlib.model.DeviceMap
+import io.github.jeffdavidgordon.hdhrlib.model.Features
 import io.github.jeffdavidgordon.hdhrlib.model.TunerStatus
+import io.github.jeffdavidgordon.hdhrlib.service.SysService
 import io.github.jeffdavidgordon.hdhrlib.service.TunerService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import java.net.InetAddress
 
 class TunerDataViewModel(deviceMap: DeviceMap) : ViewModel() {
     private val _data: MutableStateFlow<DeviceMapData> = MutableStateFlow(DeviceMapData())
@@ -43,7 +46,14 @@ class TunerDataViewModel(deviceMap: DeviceMap) : ViewModel() {
 
                         tuners.add(TunerData(tuner.id, channelInfo, channelNumber, status, lineup))
                     }
-                    newDeviceMapData[deviceId] = DeviceData(deviceId, tuners)
+                    newDeviceMapData[deviceId] = DeviceData(
+                        deviceId,
+                        device.ip,
+                        SysService.getModel(device),
+                        SysService.getFeatures(device),
+                        SysService.getVersion(device),
+                        SysService.getCopyright(device),
+                        tuners)
                 }
                 _data.value = newDeviceMapData
                 delay(1000) // Ping every second
@@ -66,6 +76,11 @@ class DeviceMapData : HashMap<String, DeviceData>()
 
 data class DeviceData(
     val id: String,
+    val ip: InetAddress,
+    val model: String,
+    val features: Features,
+    val version: String,
+    val copyright: String,
     val tuners: List<TunerData>
 )
 
