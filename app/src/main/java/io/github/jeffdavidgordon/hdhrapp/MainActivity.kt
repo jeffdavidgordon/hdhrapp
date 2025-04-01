@@ -51,7 +51,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.jeffdavidgordon.hdhrapp.model.TunerStateFlow
 import io.github.jeffdavidgordon.hdhrapp.model.TunerStateFlowFactory
@@ -63,7 +62,6 @@ import io.github.jeffdavidgordon.hdhrlib.service.DeviceService
 import io.github.jeffdavidgordon.hdhrlib.service.TunerService
 import java.net.InetAddress
 import java.net.UnknownHostException
-import java.util.UUID
 import kotlin.experimental.inv
 
 class MainActivity : ComponentActivity() {
@@ -72,8 +70,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val gfgPolicy = ThreadPolicy.Builder().permitAll().build()
-        StrictMode.setThreadPolicy(gfgPolicy)
+        StrictMode.setThreadPolicy(ThreadPolicy.Builder().permitAll().build())
 
         val deviceMap = deviceService.getDeviceMap(getBroadcastAddress(this))
         deviceMap.addDevice(InetAddress.getByName("192.168.1.86"))
@@ -124,7 +121,7 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppContent(deviceMap: DeviceMap) {
+fun AppContent(deviceMap: DeviceMap?) {
     val tunerService = TunerService()
 
     MaterialTheme(
@@ -150,7 +147,7 @@ fun AppContent(deviceMap: DeviceMap) {
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    deviceMap.forEach { (_, device) ->
+                    deviceMap?.forEach { (_, device) ->
                         DeviceRow(device)
                         HeaderRow()
                         device?.tuners?.map { tuner ->
@@ -171,7 +168,7 @@ fun AppContent(deviceMap: DeviceMap) {
 }
 
 @Composable
-fun DeviceRow(device: Device) {
+fun DeviceRow(device: Device?) {
     var showDialog by remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
@@ -180,14 +177,16 @@ fun DeviceRow(device: Device) {
             .padding(8.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text("Device: " + device.id, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), color = Color.White)
-        Box(
-            modifier = Modifier.clickable { showDialog = true }
-        ) {
-            Icon(imageVector = Icons.Outlined.Info, contentDescription = "Device Info")
-        }
-        if (showDialog) {
-            DeviceDialog(onDismiss = { showDialog = false }, device)
+        Text("Device: " + device?.id, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), color = Color.White)
+        if (device != null) {
+            Box(
+                modifier = Modifier.clickable { showDialog = true }
+            ) {
+                Icon(imageVector = Icons.Outlined.Info, contentDescription = "Device Info")
+            }
+            if (showDialog) {
+                DeviceDialog(onDismiss = { showDialog = false }, device)
+            }
         }
     }
 }
@@ -297,7 +296,7 @@ fun DataRow(
         tunerStateFlowData?.lineup?.forEach { (channel, deviceChannel) ->
             if (deviceChannel?.deviceFrequency != null) {
                 DropdownMenuItem(
-                    text = { Text(text = "$channel - ${deviceChannel.deviceFrequency.guideNumber} ${deviceChannel.deviceFrequency.guideName}") },
+                    text = { Text(text = "$channel - ${deviceChannel.deviceFrequency?.guideNumber} ${deviceChannel.deviceFrequency?.guideName}") },
                     onClick = {
                         expanded = false
                         tunerService.setChannel(tuner, channel.toLong())
@@ -360,39 +359,39 @@ fun DeviceDialog(onDismiss: () -> Unit, device: Device) {
                 }
                 Row(modifier = Modifier.padding(bottom = 8.dp)) {
                     Text(text = "IP: ", fontWeight = FontWeight.Bold)
-                    Text(text = device.ip.hostAddress ?: "(ip not available)")
+                    Text(text = device.ip?.hostAddress ?: "(ip not available)")
                 }
                 Row(modifier = Modifier.padding(bottom = 8.dp)) {
                     Text(text = "Model: ", fontWeight = FontWeight.Bold)
-                    Text(text = device.deviceDetails.model)
+                    Text(text = device.deviceDetails?.model ?: "not available")
                 }
                 Row(modifier = Modifier.padding(bottom = 8.dp)) {
                     Text(text = "Channel Maps: ", fontWeight = FontWeight.Bold)
                 }
                 Row(modifier = Modifier.padding(bottom = 8.dp)) {
-                    Text(text = device.deviceDetails.features.channelMap.toString())
+                    Text(text = device.deviceDetails?.features?.channelMap?.toString() ?: "not available")
                 }
                 Row {
                     Text(text = "Modulation: ", fontWeight = FontWeight.Bold)
                 }
                 Row(modifier = Modifier.padding(bottom = 8.dp)) {
-                    Text(text = device.deviceDetails.features.modulation.toString())
+                    Text(text = device.deviceDetails?.features?.modulation?.toString() ?: "not available")
                 }
                 Row {
                     Text(text = "Auto Modulation: ", fontWeight = FontWeight.Bold)
                 }
                 Row(modifier = Modifier.padding(bottom = 8.dp)) {
-                    Text(text = device.deviceDetails.features.autoModulation.toString())
+                    Text(text = device.deviceDetails?.features?.autoModulation?.toString() ?: "not available")
                 }
                 Row(modifier = Modifier.padding(bottom = 8.dp)) {
                     Text(text = "Version: ", fontWeight = FontWeight.Bold)
-                    Text(device.deviceDetails.version)
+                    Text(device.deviceDetails?.version ?: "not available")
                 }
                 Row {
                     Text(text = "Copyright: ", fontWeight = FontWeight.Bold)
                 }
                 Row(modifier = Modifier.padding(bottom = 8.dp)) {
-                    Text(device.deviceDetails.copyright)
+                    Text(device.deviceDetails?.copyright ?: "not available")
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth(1f)) {

@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 class TunerStateFlow(tuner: Tuner) : ViewModel() {
     private val tunerService = TunerService()
     private val _data: MutableStateFlow<TunerState> = MutableStateFlow(TunerState())
-    val data: StateFlow<TunerState?> = _data
+    val data: StateFlow<TunerState> = _data
 
     init {
         startFetchingData(tuner)
