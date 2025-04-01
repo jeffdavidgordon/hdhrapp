@@ -1,11 +1,12 @@
 package io.github.jeffdavidgordon.hdhrapp.model
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import io.github.jeffdavidgordon.hdhrlib.model.Channel
 import io.github.jeffdavidgordon.hdhrlib.model.Tuner
 import io.github.jeffdavidgordon.hdhrlib.model.TunerState
+import io.github.jeffdavidgordon.hdhrlib.model.TunerStatus
 import io.github.jeffdavidgordon.hdhrlib.service.TunerService
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,10 +25,18 @@ class TunerStateFlow(tuner: Tuner) : ViewModel() {
 
     private fun startFetchingData(tuner: Tuner) {
         viewModelScope.launch {
-            while (isActive) { // Ensures cancellation when ViewModel is cleared
-                val myTunerState = tunerService.getTunerState(tuner)
-                _data.value = myTunerState
-                delay(1000) // Ping every second
+            while (isActive) {
+                try {
+                    _data.value = tunerService.getTunerState(tuner)
+                } catch (_: Exception) {
+                    _data.value = TunerState(
+                        Channel("n/a", "n/a"),
+                        0,
+                        TunerStatus("ch=none lock=none ss=0 snq=0 seq=0 bps=0 pps=0"),
+                        emptyMap()
+                    )
+                }
+                delay(1000)
             }
         }
     }
@@ -39,6 +48,6 @@ class TunerStateFlowFactory(private val tuner: Tuner) : ViewModelProvider.Factor
             @Suppress("UNCHECKED_CAST")
             return TunerStateFlow(tuner) as T
         }
-        throw IllegalArgumentException("Unknown DeviceMapState class")
+        throw IllegalArgumentException("Unknown Tuner class")
     }
 }
