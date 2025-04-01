@@ -54,6 +54,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.jeffdavidgordon.hdhrapp.model.TunerStateFlow
 import io.github.jeffdavidgordon.hdhrapp.model.TunerStateFlowFactory
+import io.github.jeffdavidgordon.hdhrlib.exception.HdhrException
 import io.github.jeffdavidgordon.hdhrlib.model.Device
 import io.github.jeffdavidgordon.hdhrlib.model.DeviceMap
 import io.github.jeffdavidgordon.hdhrlib.model.Tuner
@@ -299,7 +300,7 @@ fun DataRow(
                     text = { Text(text = "$channel - ${deviceChannel.deviceFrequency?.guideNumber} ${deviceChannel.deviceFrequency?.guideName}") },
                     onClick = {
                         expanded = false
-                        tunerService.setChannel(tuner, channel.toLong())
+                        setChannel(tunerService, tuner, channel.toLong())
                     }
                 )
             } else {
@@ -307,11 +308,19 @@ fun DataRow(
                     text = { Text(text = "$channel - (no signal)", color = Color.Red) },
                     onClick = {
                         expanded = false
-                        tunerService.setChannel(tuner, channel.toLong())
+                        setChannel(tunerService, tuner, channel.toLong())
                     }
                 )
             }
         }
+    }
+}
+
+fun setChannel(tunerService: TunerService, tuner: Tuner, channel: Long) {
+    try {
+        tunerService.setChannel(tuner, channel)
+    } catch (e: HdhrException) {
+        println(e.message)
     }
 }
 
