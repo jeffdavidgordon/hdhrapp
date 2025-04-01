@@ -152,7 +152,7 @@ fun AppContent(deviceMap: DeviceMap?) {
                         DeviceRow(device)
                         HeaderRow()
                         device?.tuners?.map { tuner ->
-                            val tunerStateFlow: TunerStateFlow = viewModel(factory = TunerStateFlowFactory(tuner), key = "${System.nanoTime()}")
+                            val tunerStateFlow: TunerStateFlow = viewModel(factory = TunerStateFlowFactory(tuner), key = "${device.id}_${tuner.id}")
                             val tunerStateFlowData by tunerStateFlow.data.collectAsState()
 
                             DataRow(
