@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "HDHomeRun Signal Statistics"
+rootProject.name = "Signal Statistics"
 include(":app")
