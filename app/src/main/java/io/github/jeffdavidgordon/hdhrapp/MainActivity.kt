@@ -7,13 +7,11 @@ import android.net.LinkProperties
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
-import android.window.SplashScreen
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -145,13 +144,17 @@ fun AppContent(deviceMap: DeviceMap?) {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Signal Statistics") }
+                    title = { Text("Signal Statistics") },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color(0xFF6200EE),
+                        titleContentColor = Color.White
+                    ),
                 )
             }
         ) { innerPadding ->
             Surface(
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
-                color = MaterialTheme.colorScheme.background
+                color = MaterialTheme.colorScheme.surface
             ) {
                 Column(
                     modifier = Modifier
@@ -182,22 +185,31 @@ fun AppContent(deviceMap: DeviceMap?) {
 @Composable
 fun DeviceRow(device: Device?) {
     var showDialog by remember { mutableStateOf(false) }
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Black)
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.primary
     ) {
-        Text("Device: " + device?.id, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f), color = Color.White)
-        if (device != null) {
-            Box(
-                modifier = Modifier.clickable { showDialog = true }
-            ) {
-                Icon(imageVector = Icons.Outlined.Info, contentDescription = "Device Info")
-            }
-            if (showDialog) {
-                DeviceDialog(onDismiss = { showDialog = false }, device)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                "Device: " + device?.id,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f),
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+            if (device != null) {
+                Box(
+                    modifier = Modifier.clickable { showDialog = true }
+                ) {
+                    Icon(imageVector = Icons.Outlined.Info, contentDescription = "Device Info")
+                }
+                if (showDialog) {
+                    DeviceDialog(onDismiss = { showDialog = false }, device)
+                }
             }
         }
     }
@@ -205,46 +217,53 @@ fun DeviceRow(device: Device?) {
 
 @Composable
 fun HeaderRow() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.DarkGray)
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = MaterialTheme.colorScheme.secondary
     ) {
-        Text(
-            "Tuner",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.2f)
-        )
-        Text(
-            "Channel",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.2f)
-        )
-        Text(
-            "Strength",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.16f)
-        )
-        Text(
-            "Quality",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.15f)
-        )
-        Text(
-            "Errors",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.14f)
-        )
-        Spacer(
-            modifier = Modifier.weight(0.1f)
-        )
+        Row(
+            modifier = Modifier.padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                "Tuner",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(0.2f),
+                color = MaterialTheme.colorScheme.onSecondary
+            )
+            Text(
+                "Channel",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(0.2f),
+                color = MaterialTheme.colorScheme.onSecondary
+            )
+            Text(
+                "Strength",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(0.16f),
+                color = MaterialTheme.colorScheme.onSecondary
+            )
+            Text(
+                "Quality",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(0.15f),
+                color = MaterialTheme.colorScheme.onSecondary
+            )
+            Text(
+                "Errors",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(0.14f),
+                color = MaterialTheme.colorScheme.onSecondary
+            )
+            Spacer(
+                modifier = Modifier.weight(0.1f)
+            )
+        }
     }
 }
 
@@ -433,7 +452,7 @@ fun LoadingScreen() {
 
     SignalStatisticsTheme {
         Surface(
-            color = MaterialTheme.colorScheme.background
+            color = MaterialTheme.colorScheme.surface
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
