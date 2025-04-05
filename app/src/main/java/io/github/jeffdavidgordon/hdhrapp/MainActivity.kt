@@ -7,6 +7,7 @@ import android.net.LinkProperties
 import android.os.Bundle
 import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
+import android.window.SplashScreen
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
@@ -38,7 +39,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -60,6 +60,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.jeffdavidgordon.hdhrapp.model.TunerStateFlow
 import io.github.jeffdavidgordon.hdhrapp.model.TunerStateFlowFactory
+import io.github.jeffdavidgordon.hdhrapp.ui.theme.SignalStatisticsTheme
 import io.github.jeffdavidgordon.hdhrlib.exception.HdhrException
 import io.github.jeffdavidgordon.hdhrlib.model.Device
 import io.github.jeffdavidgordon.hdhrlib.model.DeviceMap
@@ -77,9 +78,9 @@ class MainActivity : ComponentActivity() {
     val deviceService = DeviceService()
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.Theme_SignalStatistics)
-        StrictMode.setThreadPolicy(ThreadPolicy.Builder().permitAll().build())
         super.onCreate(savedInstanceState)
+
+        StrictMode.setThreadPolicy(ThreadPolicy.Builder().permitAll().build())
 
         setContent {
             LoadingScreen()
@@ -140,12 +141,7 @@ class MainActivity : ComponentActivity() {
 fun AppContent(deviceMap: DeviceMap?) {
     val tunerService = TunerService()
 
-    MaterialTheme(
-        colorScheme = darkColorScheme(
-            background = Color.Black,
-            onBackground = Color.White
-        )
-    ) {
+    SignalStatisticsTheme {
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -435,23 +431,29 @@ fun LoadingScreen() {
         isLogoVisible = true
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            AnimatedVisibility(
-                visible = isLogoVisible,
-                enter = fadeIn()
+    SignalStatisticsTheme {
+        Surface(
+            color = MaterialTheme.colorScheme.background
+        ) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground), // Replace with your logo
-                    contentDescription = "App Logo",
-                    modifier = Modifier.size(150.dp)
-                )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    AnimatedVisibility(
+                        visible = isLogoVisible,
+                        enter = fadeIn()
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.signalstatistics), // Replace with your logo
+                            contentDescription = "Signal Statistics",
+                            modifier = Modifier.size(150.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
     }
 }
