@@ -9,6 +9,9 @@ import android.os.StrictMode
 import android.os.StrictMode.ThreadPolicy
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -37,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,11 +50,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.jeffdavidgordon.hdhrapp.model.TunerStateFlow
 import io.github.jeffdavidgordon.hdhrapp.model.TunerStateFlowFactory
@@ -61,6 +67,8 @@ import io.github.jeffdavidgordon.hdhrlib.model.Tuner
 import io.github.jeffdavidgordon.hdhrlib.model.TunerState
 import io.github.jeffdavidgordon.hdhrlib.service.DeviceService
 import io.github.jeffdavidgordon.hdhrlib.service.TunerService
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.net.InetAddress
 import java.net.UnknownHostException
 import kotlin.experimental.inv
@@ -69,14 +77,21 @@ class MainActivity : ComponentActivity() {
     val deviceService = DeviceService()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        setTheme(R.style.Theme_SignalStatistics)
+        StrictMode.setThreadPolicy(ThreadPolicy.Builder().permitAll().build())
         super.onCreate(savedInstanceState)
 
-        StrictMode.setThreadPolicy(ThreadPolicy.Builder().permitAll().build())
-
-        val deviceMap = deviceService.getDeviceMap(getBroadcastAddress(this))
-        deviceMap.addDevice(InetAddress.getByName("192.168.1.86"))
         setContent {
-            AppContent(deviceMap)
+            LoadingScreen()
+        }
+
+        lifecycleScope.launch {
+            val deviceMap = deviceService.getDeviceMap(getBroadcastAddress(this@MainActivity))
+            deviceMap.addDevice(InetAddress.getByName("192.168.1.86"))
+            delay(3000)
+            setContent {
+                AppContent(deviceMap)
+            }
         }
     }
 
@@ -407,6 +422,36 @@ fun DeviceDialog(onDismiss: () -> Unit, device: Device) {
                     Text("OK")
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun LoadingScreen() {
+    var isLogoVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        delay(1000)
+        isLogoVisible = true
+    }
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            AnimatedVisibility(
+                visible = isLogoVisible,
+                enter = fadeIn()
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_foreground), // Replace with your logo
+                    contentDescription = "App Logo",
+                    modifier = Modifier.size(150.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
     }
 }
