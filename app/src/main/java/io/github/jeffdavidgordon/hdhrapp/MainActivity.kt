@@ -48,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -146,8 +147,8 @@ fun AppContent(deviceMap: DeviceMap?) {
                 TopAppBar(
                     title = { Text("Signal Statistics") },
                     colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color(0xFF6200EE),
-                        titleContentColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                 )
             }
@@ -159,12 +160,13 @@ fun AppContent(deviceMap: DeviceMap?) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .padding(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
                     deviceMap?.forEach { (_, device) ->
                         DeviceRow(device)
                         HeaderRow()
+                        Spacer(modifier = Modifier.height(8.dp))
                         device?.tuners?.map { tuner ->
                             val tunerStateFlow: TunerStateFlow = viewModel(factory = TunerStateFlowFactory(tuner), key = "${device.id}_${tuner.id}")
                             val tunerStateFlowData by tunerStateFlow.data.collectAsState()
@@ -174,6 +176,7 @@ fun AppContent(deviceMap: DeviceMap?) {
                                 tuner = tuner,
                                 tunerStateFlowData = tunerStateFlowData,
                             )
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
                     }
                 }
@@ -186,7 +189,7 @@ fun AppContent(deviceMap: DeviceMap?) {
 fun DeviceRow(device: Device?) {
     var showDialog by remember { mutableStateOf(false) }
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(0.dp),
         color = MaterialTheme.colorScheme.primary
     ) {
         Row(
@@ -218,7 +221,7 @@ fun DeviceRow(device: Device?) {
 @Composable
 fun HeaderRow() {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(0.dp),
         color = MaterialTheme.colorScheme.secondary
     ) {
         Row(
@@ -466,7 +469,8 @@ fun LoadingScreen() {
                         Image(
                             painter = painterResource(id = R.drawable.signalstatistics), // Replace with your logo
                             contentDescription = "Signal Statistics",
-                            modifier = Modifier.size(150.dp)
+                            modifier = Modifier.size(150.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
