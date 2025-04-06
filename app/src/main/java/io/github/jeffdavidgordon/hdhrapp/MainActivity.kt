@@ -19,11 +19,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -63,7 +67,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.jeffdavidgordon.hdhrapp.model.TunerStateFlow
 import io.github.jeffdavidgordon.hdhrapp.model.TunerStateFlowFactory
 import io.github.jeffdavidgordon.hdhrapp.ui.theme.SignalStatisticsTheme
-import io.github.jeffdavidgordon.hdhrapp.ui.theme.surfaceContainerHighestDarkMediumContrast
 import io.github.jeffdavidgordon.hdhrlib.exception.HdhrException
 import io.github.jeffdavidgordon.hdhrlib.model.Device
 import io.github.jeffdavidgordon.hdhrlib.model.DeviceMap
@@ -82,7 +85,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         StrictMode.setThreadPolicy(ThreadPolicy.Builder().permitAll().build())
 
         setContent {
@@ -91,7 +93,6 @@ class MainActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             val deviceMap = deviceService.getDeviceMap(getBroadcastAddress(this@MainActivity))
-            deviceMap.addDevice(InetAddress.getByName("192.168.1.86"))
             delay(3000)
             setContent {
                 AppContent(deviceMap)
@@ -143,7 +144,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppContent(deviceMap: DeviceMap?) {
     val tunerService = TunerService()
-
     SignalStatisticsTheme {
         Scaffold(
             topBar = {
@@ -153,23 +153,29 @@ fun AppContent(deviceMap: DeviceMap?) {
                         containerColor = MaterialTheme.colorScheme.primary,
                         titleContentColor = MaterialTheme.colorScheme.onPrimary
                     ),
+                    modifier = Modifier
+                        .statusBarsPadding()
+                        .windowInsetsPadding(WindowInsets.safeDrawing)
+                        .padding(bottom = 0.dp)
                 )
             }
         ) { innerPadding ->
             Surface(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
                 color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(8.dp),
+                        .padding(top = 0.dp, bottom = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
                     deviceMap?.forEach { (_, device) ->
                         Surface(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().padding(top = 0.dp, bottom = 8.dp),
                             color = MaterialTheme.colorScheme.surfaceContainer
                         ) {
                             Column {
@@ -462,7 +468,8 @@ fun LoadingScreen() {
 
     SignalStatisticsTheme {
         Surface(
-            color = MaterialTheme.colorScheme.surface
+            color = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.statusBarsPadding()
         ) {
             Box(
                 modifier = Modifier.fillMaxSize(),
