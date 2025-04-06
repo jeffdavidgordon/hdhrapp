@@ -12,6 +12,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Info
@@ -61,6 +63,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import io.github.jeffdavidgordon.hdhrapp.model.TunerStateFlow
 import io.github.jeffdavidgordon.hdhrapp.model.TunerStateFlowFactory
 import io.github.jeffdavidgordon.hdhrapp.ui.theme.SignalStatisticsTheme
+import io.github.jeffdavidgordon.hdhrapp.ui.theme.surfaceContainerHighestDarkMediumContrast
 import io.github.jeffdavidgordon.hdhrlib.exception.HdhrException
 import io.github.jeffdavidgordon.hdhrlib.model.Device
 import io.github.jeffdavidgordon.hdhrlib.model.DeviceMap
@@ -155,7 +158,8 @@ fun AppContent(deviceMap: DeviceMap?) {
         ) { innerPadding ->
             Surface(
                 modifier = Modifier.fillMaxSize().padding(innerPadding),
-                color = MaterialTheme.colorScheme.surface
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(16.dp)
             ) {
                 Column(
                     modifier = Modifier
@@ -164,19 +168,29 @@ fun AppContent(deviceMap: DeviceMap?) {
                     verticalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
                     deviceMap?.forEach { (_, device) ->
-                        DeviceRow(device)
-                        HeaderRow()
-                        Spacer(modifier = Modifier.height(8.dp))
-                        device?.tuners?.map { tuner ->
-                            val tunerStateFlow: TunerStateFlow = viewModel(factory = TunerStateFlowFactory(tuner), key = "${device.id}_${tuner.id}")
-                            val tunerStateFlowData by tunerStateFlow.data.collectAsState()
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = MaterialTheme.colorScheme.surfaceContainer
+                        ) {
+                            Column {
+                                DeviceRow(device)
+                                HeaderRow()
+                                Spacer(modifier = Modifier.height(8.dp))
+                                device?.tuners?.map { tuner ->
+                                    val tunerStateFlow: TunerStateFlow = viewModel(
+                                        factory = TunerStateFlowFactory(tuner),
+                                        key = "${device.id}_${tuner.id}"
+                                    )
+                                    val tunerStateFlowData by tunerStateFlow.data.collectAsState()
 
-                            DataRow(
-                                tunerService = tunerService,
-                                tuner = tuner,
-                                tunerStateFlowData = tunerStateFlowData,
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
+                                    DataRow(
+                                        tunerService = tunerService,
+                                        tuner = tuner,
+                                        tunerStateFlowData = tunerStateFlowData,
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                }
+                            }
                         }
                     }
                 }
@@ -188,31 +202,27 @@ fun AppContent(deviceMap: DeviceMap?) {
 @Composable
 fun DeviceRow(device: Device?) {
     var showDialog by remember { mutableStateOf(false) }
-    Surface(
-        modifier = Modifier.fillMaxWidth().padding(0.dp),
-        color = MaterialTheme.colorScheme.primary
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(0.dp)
+            .background(MaterialTheme.colorScheme.secondaryContainer),
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                "Device: " + device?.id,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(1f),
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-            if (device != null) {
-                Box(
-                    modifier = Modifier.clickable { showDialog = true }
-                ) {
-                    Icon(imageVector = Icons.Outlined.Info, contentDescription = "Device Info")
-                }
-                if (showDialog) {
-                    DeviceDialog(onDismiss = { showDialog = false }, device)
-                }
+        Text(
+            device?.id.toString(),
+            fontWeight = FontWeight.Bold,
+            fontSize = 24.sp,
+            modifier = Modifier.weight(1f).padding(16.dp)
+        )
+        if (device != null) {
+            Box(
+                modifier = Modifier.padding(16.dp).clickable { showDialog = true }
+            ) {
+                Icon(imageVector = Icons.Outlined.Info, contentDescription = "Device Info", Modifier.size(28.dp))
+            }
+            if (showDialog) {
+                DeviceDialog(onDismiss = { showDialog = false }, device)
             }
         }
     }
@@ -220,53 +230,51 @@ fun DeviceRow(device: Device?) {
 
 @Composable
 fun HeaderRow() {
-    Surface(
-        modifier = Modifier.fillMaxWidth().padding(0.dp),
-        color = MaterialTheme.colorScheme.secondary
+    Row(
+        modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(0.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(
-            modifier = Modifier.padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                "Tuner",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(0.2f),
-                color = MaterialTheme.colorScheme.onSecondary
-            )
-            Text(
-                "Channel",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(0.2f),
-                color = MaterialTheme.colorScheme.onSecondary
-            )
-            Text(
-                "Strength",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(0.16f),
-                color = MaterialTheme.colorScheme.onSecondary
-            )
-            Text(
-                "Quality",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(0.15f),
-                color = MaterialTheme.colorScheme.onSecondary
-            )
-            Text(
-                "Errors",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.weight(0.14f),
-                color = MaterialTheme.colorScheme.onSecondary
-            )
-            Spacer(
-                modifier = Modifier.weight(0.1f)
-            )
-        }
+        Spacer(
+            modifier = Modifier.weight(0.05f).padding(top = 4.dp, bottom = 4.dp)
+        )
+        Text(
+            "Tuner",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.2f).padding(top = 4.dp, bottom = 4.dp),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            "Channel",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.2f).padding(top = 4.dp, bottom = 4.dp),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            "Strength",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.16f).padding(top = 4.dp, bottom = 4.dp),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            "Quality",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.15f).padding(top = 4.dp, bottom = 4.dp),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            "Errors",
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(0.14f).padding(top = 4.dp, bottom = 4.dp),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(
+            modifier = Modifier.weight(0.1f).padding(top = 4.dp, bottom = 4.dp)
+        )
     }
 }
 
@@ -277,7 +285,6 @@ fun DataRow(
     tunerStateFlowData: TunerState?,
 ) {
     var expanded by remember { mutableStateOf(false) }
-
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
