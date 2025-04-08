@@ -13,6 +13,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -238,49 +239,69 @@ fun DeviceRow(device: Device?) {
 fun HeaderRow() {
     Row(
         modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest).padding(0.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.Center
     ) {
-        Spacer(
-            modifier = Modifier.weight(0.05f).padding(top = 4.dp, bottom = 4.dp)
-        )
-        Text(
-            "Tuner",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.2f).padding(top = 4.dp, bottom = 4.dp),
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Text(
-            "Channel",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.2f).padding(top = 4.dp, bottom = 4.dp),
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Text(
-            "Strength",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.16f).padding(top = 4.dp, bottom = 4.dp),
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Text(
-            "Quality",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.15f).padding(top = 4.dp, bottom = 4.dp),
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Text(
-            "Errors",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(0.14f).padding(top = 4.dp, bottom = 4.dp),
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(
-            modifier = Modifier.weight(0.1f).padding(top = 4.dp, bottom = 4.dp)
-        )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.weight(0.14f).padding(top = 4.dp, bottom = 4.dp)
+                .border(1.dp, Color.White),
+        ) {
+            Text(
+                "Tuner",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.weight(0.31f).padding(top = 4.dp, bottom = 4.dp)
+                .border(1.dp, Color.White)
+        ) {
+            Text(
+                "Channel",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.weight(0.16f).padding(top = 4.dp, bottom = 4.dp)
+                .border(1.dp, Color.White)
+        ) {
+            Text(
+                "Strength",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.weight(0.14f).padding(top = 4.dp, bottom = 4.dp)
+                .border(1.dp, Color.White),
+        ) {
+            Text(
+                "Quality",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.weight(0.14f).padding(top = 4.dp, bottom = 4.dp)
+                .border(1.dp, Color.White)
+        ) {
+            Text(
+                "Errors",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+        Spacer(modifier = Modifier.weight(0.11f))
     }
 }
 
@@ -305,20 +326,20 @@ fun DataRow(
         )
         if (tunerStateFlowData?.channelNumber != null) {
             Text(
-                text = "Ch. " + tunerStateFlowData.channelNumber + "\n" + (tunerStateFlowData.channelInfo?.let { "${it.identifier} ${it.callsign}" }
+                text = "Ch. " + tunerStateFlowData.channelNumber + "\n" + (tunerStateFlowData.channelInfo?.let { "${it.identifier}\u00A0${it.callsign}" }
                     ?: "No Signal"),
-                modifier = Modifier.weight(2f)
+                modifier = Modifier.weight(2.5f)
                     .clickable { expanded = true }
-                    .padding(16.dp),
+                    .padding(2.dp),
                 textAlign = TextAlign.Center,
                 fontSize = 14.sp
             )
         } else {
             Text(
                 text = "No Channel",
-                modifier = Modifier.weight(2f)
+                modifier = Modifier.weight(2.5f)
                     .clickable { expanded = true }
-                    .padding(16.dp),
+                    .padding(8.dp),
                 textAlign = TextAlign.Center,
                 fontSize = 14.sp
             )
