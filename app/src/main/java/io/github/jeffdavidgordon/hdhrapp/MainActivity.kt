@@ -164,7 +164,8 @@ fun AppContent(deviceMap: DeviceMap?) {
             Surface(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding),
+                    .padding(innerPadding)
+                    .padding(horizontal = 12.dp),
                 color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(16.dp)
             ) {
@@ -244,11 +245,10 @@ fun HeaderRow() {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.weight(0.14f).padding(top = 4.dp, bottom = 4.dp)
-                .border(1.dp, Color.White),
         ) {
             Text(
                 "Tuner",
-                fontSize = 13.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -256,35 +256,32 @@ fun HeaderRow() {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.weight(0.31f).padding(top = 4.dp, bottom = 4.dp)
-                .border(1.dp, Color.White)
         ) {
             Text(
                 "Channel",
-                fontSize = 13.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.weight(0.16f).padding(top = 4.dp, bottom = 4.dp)
-                .border(1.dp, Color.White)
+            modifier = Modifier.weight(0.15f).padding(top = 4.dp, bottom = 4.dp)
         ) {
             Text(
                 "Strength",
-                fontSize = 13.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.weight(0.14f).padding(top = 4.dp, bottom = 4.dp)
-                .border(1.dp, Color.White),
+            modifier = Modifier.weight(0.12f).padding(top = 4.dp, bottom = 4.dp)
         ) {
             Text(
                 "Quality",
-                fontSize = 13.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -292,16 +289,15 @@ fun HeaderRow() {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.weight(0.14f).padding(top = 4.dp, bottom = 4.dp)
-                .border(1.dp, Color.White)
         ) {
             Text(
                 "Errors",
-                fontSize = 13.sp,
+                fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
-        Spacer(modifier = Modifier.weight(0.11f))
+        Spacer(modifier = Modifier.weight(0.14f))
     }
 }
 
@@ -396,7 +392,7 @@ fun CircularProgressBar(progress: Float?, modifier: Modifier = Modifier) {
     val red = Color.Red
     val green = Color.Green
     Box(
-        modifier = modifier.size(50.dp),
+        modifier = modifier.size(50.dp).padding(horizontal = 2.dp),
         contentAlignment = Alignment.Center
     ) {
         val fraction = (progress?.coerceIn(0F, 100F) ?: 0F) / 100F
