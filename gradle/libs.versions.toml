@@ -1,6 +1,6 @@
 [versions]
 activityCompose = "1.10.1"
-agp = "8.9.1"
+agp = "8.9.2"
 hdhrlib = "0.9.1"
 kotlin = "1.9.24"
 coreKtx = "1.16.0"
