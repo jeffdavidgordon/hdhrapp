@@ -95,7 +95,6 @@ class MainActivity : ComponentActivity() {
 
         lifecycleScope.launch {
             val deviceMap = deviceService.getDeviceMap(getBroadcastAddress(this@MainActivity))
-            deviceMap.addDevice(InetAddress.getByName("192.168.1.86"))
             delay(3000)
             setContent {
                 AppContent(deviceMap)
