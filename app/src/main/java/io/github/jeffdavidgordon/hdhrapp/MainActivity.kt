@@ -28,7 +28,9 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Info
@@ -172,7 +174,8 @@ fun AppContent(deviceMap: DeviceMap?) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(top = 0.dp, bottom = 8.dp),
+                        .padding(top = 0.dp, bottom = 8.dp)
+                        .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(0.dp)
                 ) {
                     deviceMap?.forEach { (_, device) ->
@@ -200,6 +203,7 @@ fun AppContent(deviceMap: DeviceMap?) {
                                 }
                             }
                         }
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }
