@@ -319,7 +319,7 @@ fun DataRow(
     ) {
         Text(
             text = tuner.id.toString(),
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(0.14f)
                 .clickable { expanded = true },
             textAlign = TextAlign.Center,
             fontSize = 16.sp
@@ -328,7 +328,7 @@ fun DataRow(
             Text(
                 text = "Ch. " + tunerStateFlowData.channelNumber + "\n" + (tunerStateFlowData.channelInfo?.let { "${it.identifier}\u00A0${it.callsign}" }
                     ?: "No Signal"),
-                modifier = Modifier.weight(2.5f)
+                modifier = Modifier.weight(0.31f)
                     .clickable { expanded = true }
                     .padding(2.dp),
                 textAlign = TextAlign.Center,
@@ -337,22 +337,23 @@ fun DataRow(
         } else {
             Text(
                 text = "No Channel",
-                modifier = Modifier.weight(2.5f)
+                modifier = Modifier.weight(0.31f)
                     .clickable { expanded = true }
                     .padding(8.dp),
                 textAlign = TextAlign.Center,
                 fontSize = 14.sp
             )
         }
-        CircularProgressBar(progress = (tunerStateFlowData?.tunerStatus?.ss)?.toFloat(), modifier = Modifier.weight(1f).clickable { expanded = true })
-        CircularProgressBar(progress = (tunerStateFlowData?.tunerStatus?.snq)?.toFloat(), modifier = Modifier.weight(1f).clickable { expanded = true })
-        CircularProgressBar(progress = (tunerStateFlowData?.tunerStatus?.seq)?.toFloat(), modifier = Modifier.weight(1f).clickable { expanded = true })
+        CircularProgressBar(progress = (tunerStateFlowData?.tunerStatus?.ss)?.toFloat(), modifier = Modifier.weight(0.15f).clickable { expanded = true })
+        CircularProgressBar(progress = (tunerStateFlowData?.tunerStatus?.snq)?.toFloat(), modifier = Modifier.weight(0.12f).clickable { expanded = true })
+        CircularProgressBar(progress = (tunerStateFlowData?.tunerStatus?.seq)?.toFloat(), modifier = Modifier.weight(0.14f).clickable { expanded = true })
         Column(
-            modifier = Modifier.padding(16.dp).clickable { expanded = true }
+            modifier = Modifier.weight(0.14f).padding(16.dp).clickable { expanded = true },
         ) {
             Icon(
                 imageVector = Icons.Default.MoreVert,
-                contentDescription = "Change channel..."
+                contentDescription = "Change channel...",
+                modifier = Modifier.align(Alignment.End)
             )
         }
     }
